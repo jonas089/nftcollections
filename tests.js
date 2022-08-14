@@ -78,28 +78,14 @@ async function transfer(
   );
 }
 
-/* MINT
-
-await console.log(await testContract.mintProduct(
-  "017910998638dd5580e33b513286e2860b085c422987b83dc0d6b27ad04e0701c1",
-  "Daytona",
-  "items",
-  '{\"name\":\"Daytona Watch 09\",\"token_uri\":\"https://www.daytona.ch\",\"checksum\":\"Null\"}',
-  keymanager,
-  node_addr,
-  "50000000000" // 50 casper
-));
-
-*/
-
 query(
   "Daytona",
   "bfb5162e42c111b1211e565201777d780c1873f63b767ba73d6bdb398d3a8bb2",
   "items"
 );
-/*
+
 transfer(
-  // public key hex
+  // public key hex - TBD: use keymanager in the future
   "017910998638dd5580e33b513286e2860b085c422987b83dc0d6b27ad04e0701c1",
   // product hash
   "aba42bc6b59e68be55f85f656eebba370092370aa87eb3dfeefb0088f0b0d077",
@@ -115,7 +101,7 @@ transfer(
   // gas fee
   "5000000000" // 5 casper
 )
-*/
+
 mint(
   // public key hex
   "017910998638dd5580e33b513286e2860b085c422987b83dc0d6b27ad04e0701c1",
