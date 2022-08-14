@@ -140,42 +140,4 @@ class SupplychainContract{
   }
 }
 
-module.exports = SupplychainContract;
-/*
-const node_addr = "http://162.55.245.219:7777/rpc/";
-const Client = new CasperClient(node_addr);
-const hash = "hash-6e7757c21690a60ac1dd4846a02cf8f4df33e2b933ba68116a9aad9de90ad724";
-testContract = new SupplychainContract(Client, hash);
-
-// library testing
-async function test(){
-  //console.log(await testContract.queryProductHash("Daytona", "items"));
-  //await testContract.queryProduct("Daytona", "bfb5162e42c111b1211e565201777d780c1873f63b767ba73d6bdb398d3a8bb2", "items");
-  // Example for querying a Product-row ( Daytona )
-  await console.log(await testContract.queryProduct("Daytona", "bfb5162e42c111b1211e565201777d780c1873f63b767ba73d6bdb398d3a8bb2", "items"));
-  keymanager = new KeyManager("./");
-  //console.log(keymanager.publicKeyHex());
-  await console.log(await testContract.transferProduct(
-    "017910998638dd5580e33b513286e2860b085c422987b83dc0d6b27ad04e0701c1",
-    "fe7892372177ba66252b7afc681958e64499c1f984cf5a86ca99fe4b84aad8cd",
-    "Daytona",
-    "items",
-    "017910998638dd5580e33b513286e2860b085c422987b83dc0d6b27ad04e0701c1",
-    "01eecc8e4f5b0bd8e7dd37e236ebb49720d77f9d2ed825dcdf6f1b616ffbb5104a",
-    keymanager,
-    node_addr,
-    "1000000000" // 1 casper
-  ))
-  //keymanager.newKeys();
-  //await console.log(keymanager.publicKeyHex());
-  /*await console.log(await testContract.mintProduct(
-    "017910998638dd5580e33b513286e2860b085c422987b83dc0d6b27ad04e0701c1",
-    "Daytona",
-    "items",
-    '{\"name\":\"Daytona Watch 09\",\"token_uri\":\"https://www.daytona.ch\",\"checksum\":\"Null\"}',
-    keymanager,
-    node_addr,
-    "50000000000" // 50 casper
-  ));
-}*/
-//test()
+module.exports = {SupplychainContract, KeyManager};
