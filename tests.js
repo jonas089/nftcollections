@@ -1,6 +1,7 @@
-const { CasperClient, RuntimeArgs, CLValueBuilder, Contracts, DeployUtil, CLPublicKey, CLKey, Keys, CLAccountHash } = require('casper-js-sdk');
+const {CasperClient} = require('casper-js-sdk');
 const {SupplychainContract, KeyManager} = require('./lib.js');
 const {node_addr, hash} = require('./constants.js');
+const {isDeployed} = require('./utils.js');
 
 // Instance of CasperClient
 const Client = new CasperClient(node_addr);
@@ -78,12 +79,19 @@ async function transfer(
   );
 }
 
+async function test_utils(){
+  // currently this throws an error if the deploy is pending. 
+  await console.log(await isDeployed(Client, "ba20428ffe31d3f1fb1a64c37da3bb4925b1be830a8dc98d46f29fd6792a089b"));
+}
+
 query(
   "Daytona",
   "bfb5162e42c111b1211e565201777d780c1873f63b767ba73d6bdb398d3a8bb2",
   "items"
 );
 
+test_utils();
+/*
 transfer(
   // public key hex - TBD: use keymanager in the future
   "017910998638dd5580e33b513286e2860b085c422987b83dc0d6b27ad04e0701c1",
@@ -100,8 +108,8 @@ transfer(
   node_addr,
   // gas fee
   "5000000000" // 5 casper
-)
-
+)*/
+/*
 mint(
   // public key hex
   "017910998638dd5580e33b513286e2860b085c422987b83dc0d6b27ad04e0701c1",
@@ -112,9 +120,9 @@ mint(
   // Daytona Watch 11, ...12, ...13, etc.
   // Changing the ID alone is already enough for
   // the Metadata to be unique and valid.
-  '{\"name\":\"Daytona Watch 11\",\"token_uri\":\"https://www.daytona.ch\",\"checksum\":\"Null\"}',
+  '{\"name\":\"Daytona Watch 13\",\"token_uri\":\"https://www.daytona.ch\",\"checksum\":\"Null\"}',
   // keymanger takes the path of the keys as a constructor argument
   new KeyManager('./'),
   node_addr,
   "50000000000" // default mint fee for testing 50 CSPR
-)
+)*/
