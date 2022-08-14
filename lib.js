@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { RuntimeArgs, CLValueBuilder, Contracts, CasperClient, DeployUtil, CLPublicKey, CLKey, Keys, CLAccountHash } = require('casper-js-sdk');
+const { RuntimeArgs, CLValueBuilder, Contracts, DeployUtil, CLPublicKey, CLKey, Keys, CLAccountHash } = require('casper-js-sdk');
 
 function publicKeyBytes(hex_key){
   return CLPublicKey.fromHex(hex_key);
@@ -140,10 +140,14 @@ class SupplychainContract{
   }
 }
 
+module.exports = SupplychainContract;
+/*
 const node_addr = "http://162.55.245.219:7777/rpc/";
 const Client = new CasperClient(node_addr);
 const hash = "hash-6e7757c21690a60ac1dd4846a02cf8f4df33e2b933ba68116a9aad9de90ad724";
 testContract = new SupplychainContract(Client, hash);
+
+// library testing
 async function test(){
   //console.log(await testContract.queryProductHash("Daytona", "items"));
   //await testContract.queryProduct("Daytona", "bfb5162e42c111b1211e565201777d780c1873f63b767ba73d6bdb398d3a8bb2", "items");
@@ -172,6 +176,6 @@ async function test(){
     keymanager,
     node_addr,
     "50000000000" // 50 casper
-  ));*/
-}
-test()
+  ));
+}*/
+//test()
