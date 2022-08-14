@@ -30,8 +30,26 @@ async function query(name, account, dict_key){
 // Currently Metadata has to be changed manually.
 // Deploying twice the same NFT with the same Metadata
 // will fail!
-async function mint(){
-
+async function mint(
+  public_key,
+  id,
+  dict_key,
+  metadata,
+  keymanager,
+  node_addr,
+  gas)
+  {
+  await console.log("Deploy Hash:");
+  await console.log(
+    await testContract.mintProduct(
+      public_key,
+      id,
+      dict_key,
+      metadata,
+      keymanager,
+      node_addr,
+      gas)
+  );
 }
 
 async function transfer(
@@ -45,6 +63,7 @@ async function transfer(
   node_addr,
   gas)
   {
+  await console.log("Deploy Hash:");
   await console.log(
     await testContract.transferProduct(
       public_key,
@@ -59,40 +78,6 @@ async function transfer(
   );
 }
 
-query(
-  "Daytona",
-  "bfb5162e42c111b1211e565201777d780c1873f63b767ba73d6bdb398d3a8bb2",
-  "items"
-);
-
-transfer(
-  "017910998638dd5580e33b513286e2860b085c422987b83dc0d6b27ad04e0701c1",
-  "aba42bc6b59e68be55f85f656eebba370092370aa87eb3dfeefb0088f0b0d077",
-  "Daytona",
-  "items",
-  "017910998638dd5580e33b513286e2860b085c422987b83dc0d6b27ad04e0701c1",
-  "01eecc8e4f5b0bd8e7dd37e236ebb49720d77f9d2ed825dcdf6f1b616ffbb5104a",
-  new KeyManager("./"),
-  node_addr,
-  "5000000000" // 5 casper
-)
-
-/* TRANSFER
-
-await console.log(await testContract.transferProduct(
-  "017910998638dd5580e33b513286e2860b085c422987b83dc0d6b27ad04e0701c1",
-  "fe7892372177ba66252b7afc681958e64499c1f984cf5a86ca99fe4b84aad8cd",
-  "Daytona",
-  "items",
-  "017910998638dd5580e33b513286e2860b085c422987b83dc0d6b27ad04e0701c1",
-  "01eecc8e4f5b0bd8e7dd37e236ebb49720d77f9d2ed825dcdf6f1b616ffbb5104a",
-  keymanager,
-  node_addr,
-  "1000000000" // 1 casper
-))
-
-*/
-
 /* MINT
 
 await console.log(await testContract.mintProduct(
@@ -106,3 +91,44 @@ await console.log(await testContract.mintProduct(
 ));
 
 */
+
+query(
+  "Daytona",
+  "bfb5162e42c111b1211e565201777d780c1873f63b767ba73d6bdb398d3a8bb2",
+  "items"
+);
+/*
+transfer(
+  // public key hex
+  "017910998638dd5580e33b513286e2860b085c422987b83dc0d6b27ad04e0701c1",
+  // product hash
+  "aba42bc6b59e68be55f85f656eebba370092370aa87eb3dfeefb0088f0b0d077",
+  "Daytona",
+  "items",
+  // public key hex sender
+  "017910998638dd5580e33b513286e2860b085c422987b83dc0d6b27ad04e0701c1",
+  // public key hex recipient
+  "01eecc8e4f5b0bd8e7dd37e236ebb49720d77f9d2ed825dcdf6f1b616ffbb5104a",
+  // keymanger takes the path of the keys as a constructor argument
+  new KeyManager("./"),
+  node_addr,
+  // gas fee
+  "5000000000" // 5 casper
+)
+*/
+mint(
+  // public key hex
+  "017910998638dd5580e33b513286e2860b085c422987b83dc0d6b27ad04e0701c1",
+  "Daytona",
+  "items",
+  // Note "Daytona Watch 10" - it will make sense to
+  // automatically increase the ID when minting, e.g.
+  // Daytona Watch 11, ...12, ...13, etc.
+  // Changing the ID alone is already enough for
+  // the Metadata to be unique and valid.
+  '{\"name\":\"Daytona Watch 11\",\"token_uri\":\"https://www.daytona.ch\",\"checksum\":\"Null\"}',
+  // keymanger takes the path of the keys as a constructor argument
+  new KeyManager('./'),
+  node_addr,
+  "50000000000" // default mint fee for testing 50 CSPR
+)
