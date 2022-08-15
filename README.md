@@ -14,3 +14,11 @@ Mint a product of a given collection with unique Metadata! The Metadata should b
 Access: [OWNER]
 Transfer a product (by product hash and collection).
 Can only be called by the owner of a product.
+
+
+###########################
+#                         #
+###########################
+Future design Goals
+- add contract installation to library
+- improve contract & deploy using the library
