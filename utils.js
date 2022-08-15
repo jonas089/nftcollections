@@ -2,7 +2,7 @@ const {CasperClient, Keys, DeployUtil, CLPublicKey} = require('casper-js-sdk');
 const fs = require('fs');
 // Check whether a Deploy is pending, was successful, or has failed.
 
-function buf2hex(buffer) { // buffer is an ArrayBuffer
+function buf2hex(buffer) {
   return [...new Uint8Array(buffer)]
       .map(x => x.toString(16).padStart(2, '0'))
       .join('');
@@ -18,7 +18,7 @@ async function isDeployed(Client, hash){
     return "pending";
   }
   if (JSON.stringify(deploy_status).includes("Success")){
-    console.log(info[0].hash);
+    //console.log(info[0].hash);
     const as_bytes = info[0].hash;
     //console.log(buf2hex(as_bytes));
     return "success";
@@ -32,6 +32,7 @@ const getBinary = function(path){
   return new Uint8Array(fs.readFileSync(path, null).buffer);
 }
 
+// From ERC20 utils
 const installWasmFile = async function(
   nodeAddress,
   keys,
