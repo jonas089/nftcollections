@@ -78,7 +78,7 @@ async function transfer(
   );
 }
 
-/*
+
 transfer(
   // public key hex - TBD: use keymanager in the future
   "017910998638dd5580e33b513286e2860b085c422987b83dc0d6b27ad04e0701c1",
@@ -95,7 +95,7 @@ transfer(
   node_addr,
   // gas fee
   "5000000000" // 5 casper
-)*/
+)
 /*
 mint(
   // public key hex

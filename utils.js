@@ -33,7 +33,7 @@ const getBinary = function(path){
 }
 
 // From ERC20 utils
-const installWasmFile = async function(
+const installParentWasm = async function(
   nodeAddress,
   keys,
   chainName,
@@ -57,7 +57,15 @@ const installWasmFile = async function(
   return await client.putDeploy(deploy);
 };
 
+// Create a new collection by calling the entry point of the
+// parent contract.
+async function queryContractByHash(deployHash, version){
+    const contract = await DeployUtil.StoredVersionedContractByHash(deployHash, version);
+    return contract.StoredContractByHash.toString();
+}
+
 module.exports = {
   isDeployed,
-  installWasmFile
+  installParentWasm,
+  queryContractByHash
 }

@@ -140,4 +140,4 @@ class SupplychainContract{
   }
 }
 
-module.exports = {SupplychainContract, KeyManager};
+module.exports = {SupplychainContract, KeyManager, publicKeyBytes};
