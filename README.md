@@ -1,4 +1,4 @@
-# A library to query, mint and transfer NFTs on Casper - Built specifically for supplychain projects
+# Casper Multi Token Standard Library - build upon the CEP-78 Standard
 
 This javascript library allows for easy integration of the CEP78 NFT standard for supplychain projects where a single parent contract tracks multiple collection contracts. \
 Comparison CEP78 Token Standard (left side) \
