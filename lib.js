@@ -1,10 +1,12 @@
 const fs = require('fs');
 const { RuntimeArgs, CLValueBuilder, Contracts, DeployUtil, CLPublicKey, CLKey, Keys, CLAccountHash } = require('casper-js-sdk');
 
+// Hex-Key to Byte-Key
 function publicKeyBytes(hex_key){
   return CLPublicKey.fromHex(hex_key);
 }
 
+// Creates and parses Keys
 class KeyManager{
   constructor (path){
     this.path = path;
@@ -35,6 +37,7 @@ class KeyManager{
   }
 }
 
+// Instantiates a product contract ("child" contract) object
 class ProductContract{
   constructor(Client, hash){
     this.Client = Client;
@@ -52,6 +55,7 @@ class ProductContract{
   }
 }
 
+// Instantiates a Supplychain contract ("parent" contract) object
 class SupplychainContract{
   constructor(Client, hash){
     this.Client = Client;
