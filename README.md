@@ -1,7 +1,7 @@
 # A library to query, mint and transfer NFTs on Casper - Built specifically for supplychain projects
 
 This javascript library allows for easy integration of the CEP78 NFT standard for supplychain projects where a single parent contract tracks multiple collection contracts. \
-A CEP78 deploy that is suitable for integration could look like this: https://www.diffchecker.com/5qOWV3HI (right side).
+Comparison CEP78 Token Standard (left side) and CEP78 Multi Token Standard (right side) https://www.diffchecker.com/5qOWV3HI.
 
 # Examples are found in tests.js
 
@@ -17,4 +17,3 @@ Transfer a product (by product hash and collection). \
 Can only be called by the owner of a product.
 ### Some "modes" have been hardcoded for simplicity, but they can still be changed according to the CEP78 Standard
 https://github.com/casper-ecosystem/cep-78-enhanced-nft/blob/dev/README.md
-
