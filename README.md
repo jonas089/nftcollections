@@ -5,12 +5,12 @@ A CEP78 deploy that is suitable for integration could look like this: https://ww
 
 # Examples are found in tests.js
 ## |query|
-Access: [PUBLIC]
+Access: [PUBLIC] \
 Find the product hash of every product for a given collection ( collection by id ), that is currently owned by an account.
 ## |mint|
-Access: [MANUFACTURER]
+Access: [MANUFACTURER] \
 Mint a product of a given collection with unique Metadata! The Metadata should be generated automatically by either the Client, as this library takes Metadata as an input and does NOT generate/increment ids.
 ## |transfer|
-Access: [OWNER]
-Transfer a product (by product hash and collection).
+Access: [OWNER] \
+Transfer a product (by product hash and collection). \
 Can only be called by the owner of a product.
