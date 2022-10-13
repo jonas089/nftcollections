@@ -716,6 +716,20 @@ pub extern "C" fn mint() {
     // Token hash is stored as a string, contract hash is also stored as a string.
 
     /////////////////////////////////////////////////////
+    let external_contract_uref: URef = match runtime::get_key("external_contract") {
+        Some(uref) => uref,
+        None => runtime::revert(ApiError::MissingKey),
+    }
+    .into_uref()
+    .unwrap_or_revert();
+    let external_contract_hash: ContractHash = storage::read_or_revert(external_contract_uref);
+    let runtime_args = runtime_args! {
+        // this build will only support hash-identifiers.
+        "token_identifier" => String::from(base16::encode_lower(&runtime::blake2b(&metadata))),
+        "contract_package_hash" => this_contract_package_hash,
+    };
+
+    runtime::call_contract::<()>(external_contract_hash, "storeToken", runtime_args);
     /////////////////////////////////////////////////////
     /////////////////////////////////////////////////////
     /////////////////////////////////////////////////////
@@ -2106,4 +2120,5 @@ casper-client put-deploy --node-address http://136.243.187.84:7777 --chain-name 
 
 // external entry points:
 // storeContract
+// storeToken
 // getOwnedEffective
