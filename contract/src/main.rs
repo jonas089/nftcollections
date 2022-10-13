@@ -1505,7 +1505,7 @@ pub fn install_nft_contract() -> (ContractHash, ContractVersion) {
 }
 
 #[no_mangle]
-pub extern "C" fn callInstall() {
+pub extern "C" fn installChildContract() {
     // Represents the name of the NFT collection
     // This value cannot be changed after installation.
     let collection_name: String = runtime::get_named_arg("name_of_collection");
@@ -1539,7 +1539,12 @@ pub extern "C" fn callInstall() {
     // Refer to the enum `NFTKind`
     // in the `src/modalities.rs` file for details.
     // This value cannot be changed after installation.
-    let nft_kind: u8 = 2;
+    let nft_kind: u8 = utils::get_named_arg_with_user_errors(
+        ARG_NFT_KIND,
+        NFTCoreError::MissingNftKind,
+        NFTCoreError::InvalidNftKind,
+    )
+    .unwrap_or_revert();
 
     // Represents whether Accounts or Contracts, or both can hold NFTs for
     // a given contract instance. Refer to the enum `NFTHolderMode`
@@ -1597,13 +1602,54 @@ pub extern "C" fn callInstall() {
     .unwrap_or(0u8);
 
     let (contract_hash, contract_version) = install_nft_contract();
-    // add this item to the items named keys of the installer contract.
+    // Physical: 0, Digital: 1, Virtual: 2
+    // Store contract hashs of child contracts to make them accessible
+    // via the items named_key
     let items_key: Key = match runtime::get_key("items") {
         Some(key) => key,
         None => runtime::revert(ApiError::MissingKey),
     };
     let items_uref = items_key.into_uref().unwrap_or_revert();
     storage::dictionary_put(items_uref, &collection_name, contract_hash.to_string());
+
+    match nft_kind {
+        0 => {
+            let _physical: Vec<String> =
+                match storage::dictionary_get::<Vec<String>>(items_uref, "physical") {
+                    Ok(_maybe) => match _maybe {
+                        Some(p) => p,
+                        None => Vec::new(),
+                    },
+                    Err(_) => runtime::revert(ApiError::Read),
+                };
+            _physical.push(contract_hash.to_string());
+            storage::dictionary_put(items_uref, "physical", _physical);
+        }
+        1 => {
+            let _digital: Vec<String> =
+                match storage::dictionary_get::<Vec<String>>(items_uref, "digital") {
+                    Ok(_maybe) => match _maybe {
+                        Some(d) => d,
+                        None => Vec::new(),
+                    },
+                    Err(_) => runtime::revert(ApiError::Read),
+                };
+            _digital.push(contract_hash.to_string());
+            storage::dictionary_put(items_uref, "digital", _digital);
+        }
+        2 => {
+            let _virtual: Vec<String> =
+                match storage::dictionary_get::<Vec<String>>(items_uref, "virtual") {
+                    Ok(_maybe) => match _maybe {
+                        Some(v) => v,
+                        None => Vec::new(),
+                    },
+                    Err(_) => runtime::revert(ApiError::Read),
+                };
+            _virtual.push(contract_hash.to_string());
+            storage::dictionary_put(items_uref, "virtual", _virtual);
+        }
+    };
 
     // Store contract_hash and contract_version under the keys CONTRACT_NAME and CONTRACT_VERSION
     runtime::put_key(CONTRACT_NAME, contract_hash.into());
@@ -1680,6 +1726,8 @@ pub extern "C" fn call() {
             Parameter::new(ARG_RECEIPT_NAME, CLType::String),
             Parameter::new(ARG_IDENTIFIER_MODE, CLType::U8),
             Parameter::new(ARG_BURN_MODE, CLType::U8),
+            Parameter::new(ARG_METADATA_MUTABILITY, CLType::U8),
+            Parameter::new(ARG_NFT_METADATA_KIND, CLType::U8),
         ],
         CLType::Unit,
         EntryPointAccess::Public,
@@ -1837,11 +1885,12 @@ pub extern "C" fn call() {
         EntryPointAccess::Public,
         EntryPointType::Contract,
     );
-    let callInstall: EntryPoint = EntryPoint::new(
-        "callInstall",
+    let installChildContract: EntryPoint = EntryPoint::new(
+        "installChildContract",
         // experimental
         vec![
             Parameter::new("name_of_collection", CLType::String),
+            Parameter::new("nft_kind", CLType::U8),
             Parameter::new("json_schema", CLType::String),
         ],
         CLType::Unit,
@@ -1861,10 +1910,11 @@ pub extern "C" fn call() {
     entry_points.add_entry_point(metadata);
     entry_points.add_entry_point(set_approval_for_all);
     entry_points.add_entry_point(set_token_metadata);
-    entry_points.add_entry_point(callInstall);
+    entry_points.add_entry_point(installChildContract);
 
     let named_keys = {
         let mut named_keys = NamedKeys::new();
+        // items dict stores all contract hashes, regardless the kind.
         let items_dict = storage::new_dictionary("items").unwrap_or_revert();
         named_keys.insert("items".to_string(), items_dict.into());
         named_keys
@@ -1872,11 +1922,11 @@ pub extern "C" fn call() {
     storage::new_contract(
         entry_points,
         Some(named_keys),
-        Some("Watch_proto_v.0.0.0.1".to_string()),
+        Some("parent_contract".to_string()),
         Some("access_key".to_string()),
     );
 }
 
 /*
-casper-client put-deploy --node-address http://136.243.187.84:7777 --chain-name casper-test --secret-key private.pem --payment-amount 1000000000 --session-hash 6437b0c284e1496fbfdb6bd30aee8ffa6bcbd02b99f814af2d7f6d8049bdd8c0 --session-entry-point callInstall --session-arg "name_of_collection:String='Daytona'" "json_schema:String='"{\"properties\":{\"deity_name\":{\"name\":\"deity_name\",\"description\":\"Thenameofdeityfromaparticularpantheon.\",\"required\":true},\"mythology\":{\"name\":\"mythology\",\"description\":\"Themythologythedeitybelongsto.\",\"required\":true}}}"'"
+casper-client put-deploy --node-address http://136.243.187.84:7777 --chain-name casper-test --secret-key private.pem --payment-amount 1000000000 --session-hash 6437b0c284e1496fbfdb6bd30aee8ffa6bcbd02b99f814af2d7f6d8049bdd8c0 --session-entry-point installChildContract --session-arg "name_of_collection:String='Daytona'" "json_schema:String='"{\"properties\":{\"deity_name\":{\"name\":\"deity_name\",\"description\":\"Thenameofdeityfromaparticularpantheon.\",\"required\":true},\"mythology\":{\"name\":\"mythology\",\"description\":\"Themythologythedeitybelongsto.\",\"required\":true}}}"'"
 */
