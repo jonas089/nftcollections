@@ -109,6 +109,8 @@ pub enum NFTCoreError {
     ForbiddenMetadataUpdate = 104,
     MissingBurnMode = 105,
     InvalidBurnMode = 106,
+    InvalidContractTypeStack = 107,
+    MissingChildContractHash = 108,
 }
 
 impl From<NFTCoreError> for ApiError {

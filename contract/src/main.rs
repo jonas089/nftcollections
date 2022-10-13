@@ -4,6 +4,7 @@
 #[cfg(not(target_arch = "wasm32"))]
 compile_error!("target arch should be wasm32: compile with '--target wasm32-unknown-unknown'");
 
+mod address;
 mod constants;
 mod error;
 mod metadata;
@@ -61,6 +62,8 @@ use crate::{
     },
 };
 
+use address::Address;
+
 #[no_mangle]
 pub extern "C" fn init() {
     // We only allow the init() entrypoint to be called once.
@@ -70,6 +73,58 @@ pub extern "C" fn init() {
         runtime::revert(NFTCoreError::ContractAlreadyInitialized);
     }
 
+    // get child contract hash from runtime arguments
+    let child_contract_hash: ContractHash = utils::get_optional_named_arg_with_user_errors(
+        "CHILD_CONTRACT_HASH",
+        NFTCoreError::MissingChildContractHash,
+    )
+    .unwrap_or_revert();
+
+    // get top of caller stack ( should be the contract package hash of this child )
+    let call_stack = runtime::get_call_stack();
+    let top_of_the_stack = call_stack.into_iter().rev().next().unwrap_or_revert();
+    // use address type to store top of the stack as a contract_hash
+    // this should always be an instance of a child contract contract hash,
+    // revert if that's incorrect.
+    let address: Address = match top_of_the_stack {
+        casper_types::system::CallStackElement::Session { account_hash } => {
+            //Address::from(account_hash)
+            runtime::revert(NFTCoreError::InvalidContractTypeStack)
+        }
+        casper_types::system::CallStackElement::StoredContract {
+            contract_package_hash,
+            ..
+        } => Address::from(contract_package_hash),
+        casper_types::system::CallStackElement::StoredSession { account_hash, .. } => {
+            //Address::from(account_hash)
+            runtime::revert(NFTCoreError::InvalidContractTypeStack)
+        }
+    };
+    // note: what is the difference between contract package hash and contract hash?
+    let this_contract_package_hash: ContractPackageHash = match Address::from(address) {
+        Address::Account(a) => runtime::revert(NFTCoreError::InvalidContractTypeStack),
+        Address::Contract(c) => c,
+    };
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    // call another contract and submit the child contract hash,
+    // aswell as the contract_package hash, so that they can be mapped.
+    // store the contract_hash as a string under a Key that is
+    // the string of the ContractPackageHash Dict<String:String>
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
     // Only the installing account may call this method. All other callers are erroneous.
     let installing_account = utils::get_account_hash(
         INSTALLER,
@@ -598,6 +653,69 @@ pub extern "C" fn mint() {
         }
     };
 
+    // token was added to user account, now add token to ownership tracker
+    // to improve time complexity
+    let call_stack = runtime::get_call_stack();
+    let top_of_the_stack = call_stack.into_iter().rev().next().unwrap_or_revert();
+    // use address type to store top of the stack as a contract_hash
+    // this should always be an instance of a child contract contract hash,
+    // revert if that's incorrect.
+    let address: Address = match top_of_the_stack {
+        casper_types::system::CallStackElement::Session { account_hash } => {
+            //Address::from(account_hash)
+            runtime::revert(NFTCoreError::InvalidContractTypeStack)
+        }
+        casper_types::system::CallStackElement::StoredContract {
+            contract_package_hash,
+            ..
+        } => Address::from(contract_package_hash),
+        casper_types::system::CallStackElement::StoredSession { account_hash, .. } => {
+            //Address::from(account_hash)
+            runtime::revert(NFTCoreError::InvalidContractTypeStack)
+        }
+    };
+    // note: what is the difference between contract package hash and contract hash?
+    let this_contract_package_hash: ContractPackageHash = match Address::from(address) {
+        Address::Account(a) => runtime::revert(NFTCoreError::InvalidContractTypeStack),
+        Address::Contract(c) => c,
+    };
+
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+
+    // use the contract package hash and send a call to the external contract,
+    // contract access should be restricted to THIS parent contract.
+    // submit the contract package hash, aswell as the token id.
+    // the external contract will map the contract package hash to
+    // the contract hash and store the token hash under it.
+    // Token hash is stored as a string, contract hash is also stored as a string.
+
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
     //Increment the count of owned tokens.
     let updated_token_count =
         match utils::get_dictionary_value_from_key::<u64>(TOKEN_COUNTS, &owned_tokens_item_key) {
@@ -1691,7 +1809,8 @@ pub extern "C" fn installChildContract() {
              ARG_NFT_METADATA_KIND => nft_metadata_kind,
              ARG_IDENTIFIER_MODE => identifier_mode,
              ARG_METADATA_MUTABILITY => metadata_mutability,
-             ARG_BURN_MODE => burn_mode
+             ARG_BURN_MODE => burn_mode,
+             "CHILD_CONTRACT_HASH" => contract_hash
         },
     );
 }
