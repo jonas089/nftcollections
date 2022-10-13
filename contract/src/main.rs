@@ -25,7 +25,7 @@ use core::convert::TryInto;
 use casper_types::{
     contracts::NamedKeys, runtime_args, ApiError, CLType, CLValue, ContractHash,
     ContractPackageHash, ContractVersion, EntryPoint, EntryPointAccess, EntryPointType,
-    EntryPoints, Key, KeyTag, Parameter, RuntimeArgs, Tagged,
+    EntryPoints, Key, KeyTag, Parameter, RuntimeArgs, Tagged, URef,
 };
 
 use casper_contract::{
@@ -116,6 +116,19 @@ pub extern "C" fn init() {
     // store the contract_hash as a string under a Key that is
     // the string of the ContractPackageHash Dict<String:String>
     /////////////////////////////////////////////////////
+    let external_contract_uref: URef = match runtime::get_key("external_contract") {
+        Some(uref) => uref,
+        None => runtime::revert(ApiError::MissingKey),
+    }
+    .into_uref()
+    .unwrap_or_revert();
+    let external_contract_hash: ContractHash = storage::read_or_revert(external_contract_uref);
+    let runtime_args = runtime_args! {
+        "contract_package_hash" => this_contract_package_hash,
+        "child_contract_hash" => child_contract_hash,
+    };
+
+    runtime::call_contract::<()>(external_contract_hash, "storeContract", runtime_args);
     /////////////////////////////////////////////////////
     /////////////////////////////////////////////////////
     /////////////////////////////////////////////////////
@@ -1815,8 +1828,35 @@ pub extern "C" fn installChildContract() {
     );
 }
 
+// update the external_contract in named_keys
+#[no_mangle]
+pub extern "C" fn updateExternalContractHash() {
+    let installer = utils::get_account_hash(
+        INSTALLER,
+        NFTCoreError::MissingInstaller,
+        NFTCoreError::InvalidInstaller,
+    );
+    // only installer can update the external contract.
+    // if this is abused, nothing happens on-chain.
+    // worst case senario is the app renders incorrect content on the frontend.
+    if runtime::get_caller() != installer {
+        runtime::revert(ApiError::PermissionDenied);
+    };
+    let contract_hash: ContractHash = runtime::get_named_arg("contract_hash");
+    let external_contract_uref: URef = match runtime::get_key("external_contract") {
+        Some(uref) => uref,
+        None => runtime::revert(ApiError::MissingKey),
+    }
+    .into_uref()
+    .unwrap_or_revert();
+    // circulating supply
+    storage::write(external_contract_uref, contract_hash);
+}
+
 #[no_mangle]
 pub extern "C" fn call() {
+    let ext_contract: ContractHash = runtime::get_named_arg("external_contract");
+
     let mut entry_points: EntryPoints = EntryPoints::new();
     let mut entry_points = EntryPoints::new();
 
@@ -1848,6 +1888,14 @@ pub extern "C" fn call() {
             Parameter::new(ARG_METADATA_MUTABILITY, CLType::U8),
             Parameter::new(ARG_NFT_METADATA_KIND, CLType::U8),
         ],
+        CLType::Unit,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    );
+
+    let updateExternalContractHash = EntryPoint::new(
+        "updateExternalContractHash",
+        vec![Parameter::new("contract_hash", CLType::Any)],
         CLType::Unit,
         EntryPointAccess::Public,
         EntryPointType::Contract,
@@ -2030,12 +2078,18 @@ pub extern "C" fn call() {
     entry_points.add_entry_point(set_approval_for_all);
     entry_points.add_entry_point(set_token_metadata);
     entry_points.add_entry_point(installChildContract);
+    entry_points.add_entry_point(updateExternalContractHash);
 
     let named_keys = {
         let mut named_keys = NamedKeys::new();
         // items dict stores all contract hashes, regardless the kind.
         let items_dict = storage::new_dictionary("items").unwrap_or_revert();
         named_keys.insert("items".to_string(), items_dict.into());
+
+        let external_contract = storage::new_uref("external_contract");
+        named_keys.insert("external_contract".to_string(), external_contract.into());
+        storage::write(external_contract, ext_contract);
+
         named_keys
     };
     storage::new_contract(
@@ -2049,3 +2103,7 @@ pub extern "C" fn call() {
 /*
 casper-client put-deploy --node-address http://136.243.187.84:7777 --chain-name casper-test --secret-key private.pem --payment-amount 1000000000 --session-hash 6437b0c284e1496fbfdb6bd30aee8ffa6bcbd02b99f814af2d7f6d8049bdd8c0 --session-entry-point installChildContract --session-arg "name_of_collection:String='Daytona'" "json_schema:String='"{\"properties\":{\"deity_name\":{\"name\":\"deity_name\",\"description\":\"Thenameofdeityfromaparticularpantheon.\",\"required\":true},\"mythology\":{\"name\":\"mythology\",\"description\":\"Themythologythedeitybelongsto.\",\"required\":true}}}"'"
 */
+
+// external entry points:
+// storeContract
+// getOwnedEffective
