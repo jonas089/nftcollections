@@ -1,4 +1,5 @@
 # This repo is currently undergoing Maintainance.
+# Latest stable release (August 30)[https://github.com/jonas089/nftcollections/tree/728f9e1825270225dc45b59a10a25e1f945dafaa]:
 
 # Casper Multi Token Standard Library - build upon the CEP-78 Standard
 
